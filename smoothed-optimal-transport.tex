@@ -1,0 +1,184 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{hyperref}
+\usepackage{mathtools}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+
+\newcommand{\dd}{\mathop{\mathrm{d}\!}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Lip}{\mathrm{Lip}}
+\newcommand{\N}{\mathcal{N}}
+\renewcommand{\P}{\mathcal{P}}
+
+\DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
+\DeclarePairedDelimiter{\norm}{\lVert}{\rVert}
+
+\begin{document}
+
+\section{Basics}
+
+\subsection{Optimal transport}
+Let $X$ and $Y$ be two Radon spaces and take $c:X \times Y \to [0,\infty]$ be a Borel-measurable function (with $c(x,y)$ indicating the cost of transportation from $x$ to $y$). Given probability measures $\mu$ on $X$ and $\nu$ on $Y$, the Kantorovich formulation of the optimal transportation problem seeks to find the measure $\nu$ on $X \times Y$ achieving the infimum
+\begin{equation*}
+    \inf\left\{\int_{X \times Y} c(x,y) d\pi(x,y) \,\middle|\, \pi \in \Pi(\mu,\nu)\right\},
+\end{equation*}
+where $\Pi(\mu,\nu)$ denotes the set of all couplings of $\nu$ and $\mu$. The existence of such a $\nu$ is guaranteed if $c$ is lower semi-continuous. Often, we use the dual form of this problem given by
+\begin{equation*}
+    \sup\left(\int_X \varphi(x) \dd \mu(x) + \int_Y \psi(y) \dd \nu(y)\right),
+\end{equation*}
+where the supremum runs over all pairs of bounded and continuous functions $\varphi:X \to \R$ and $\psi:Y \to \R$ such that
+\begin{equation*}
+    \varphi(x) + \psi(y) \leq c(x,y).
+\end{equation*}
+See \url{https://en.wikipedia.org/wiki/Transportation_theory_(mathematics)} for more details.
+
+
+\subsection{Wasserstein metric}
+Let $(M,d)$ be a Radon space. For $p \geq 1$, let $\P_p(M)$ denote the collection of all probability measures $\mu$ on $M$ with finite $p$th moment, i.e. those $\mu$ for which there exists some $x_0 \in M$ such that
+\begin{equation*}
+    \int_M d(x,x_0)^p \dd \mu(x) < \infty.
+\end{equation*}
+The $p$th Wasserstein distance between two probability measures $\mu$ and $\nu$ in $\P_p(M)$ is defined as
+\begin{equation*}
+    W_p(\mu,\nu) := \left(\inf_{\pi \in \Pi(\mu,\nu)} \int_{M \times M} d(x,y)^p \dd \pi(x,y)\right)^{1/p}.
+\end{equation*}
+ Equivalently, we have
+\begin{equation*}
+    W_p(\mu,\nu) = (\inf \E[d(X,Y)^p])^{1/p},
+\end{equation*}
+where the infimum is taken over all $X$ and $Y$ whose joint distribution is a coupling of $\mu$ and $\nu$. Letting $\Lip_1(M)$ denote the space of all real functions on $M$ with Lipchitz smoothness at most 1, we have a more specific duality result.
+
+\begin{theorem}[Kantorovich-Rubinstein duality]
+    Let $(M,d)$ be a Radon space and fix $\mu,\nu \in P_1(M)$. Then,
+    \begin{equation*}
+        W_1(\mu,\nu) = \sup_{f \in \Lip_1(M)}\left\{\int_M f \dd\mu - \int_M f \dd\nu \right\}.
+    \end{equation*}
+\end{theorem}
+\begin{proof}
+    From the more general dual form, we find that
+    \begin{equation*}
+        W_1(\mu,\nu) = \sup\left(\int_M f \dd \mu + \int_M g \dd \nu\right)
+    \end{equation*}
+    over bounded, continuous $f$ and $g$ with $f(x) + g(y) \leq d(x,y)$. Thus, for each $\varepsilon > 0$, there exist such $f$ and $g$ with
+    \begin{equation*}
+        W_1(\mu,\nu) - \varepsilon \leq \int_M f \dd\mu + \int_M g \dd\nu.
+    \end{equation*}
+    Next, define $h:M \to \R$ by $h(x) = \inf_{y \in M}(d(x,y) - g(y))$, which is well defined by our boundedness assumption. Note that
+    \begin{align*}
+        \abs{h(x) - h(x')} &= \abs[\Big]{\inf_{y \in M}(d(x,y) - g(y)) - \inf_{y \in M}(d(x',y) - g(y))}\\
+        &\leq \sup_{y \in M} \abs{d(x,y) - d(x',y)} \leq d(x,x'),
+    \end{align*}
+    so $h \in \Lip_1(M)$. Also, by design, $f \leq h \leq -g$ pointwise. Taking $\pi \in \Pi(\mu,\nu)$ to be a coupling of $\mu$ and $\nu$, we have
+    \begin{align*}
+        W_1(\mu,\nu) - \varepsilon &\leq \int_M f \dd\mu + \int_M g \dd\nu\\
+        &\leq \int_M h \dd\mu - \int_M h \dd\nu\\
+        &\leq \sup_{f \in \Lip_1(M)} \left\{\int_M f \dd\mu - \int_M f \dd\nu\right\}\\
+        &=  \sup_{f \in \Lip_1(M)} \left\{\int_{M \times M} (f(x) - f(y)) \dd\pi(x,y)\right\}\\
+        &\leq \int_{M \times M} d(x,y) \dd\pi(x,y),
+    \end{align*}
+    from which the theorem follows.
+\end{proof}
+
+\begin{proposition}
+$(\P_p, W_p)$ is a metric space.
+\end{proposition}
+See \url{https://en.wikipedia.org/wiki/Wasserstein_metric} and \url{http://n.ethz.ch/~gbasso/download/A%20Hitchhikers%20guide%20to%20Wasserstein/A%20Hitchhikers%20guide%20to%20Wasserstein.pdf} for more details.
+
+\subsection{Gaussian-smoothed Wasserstein metric}
+
+In what follows, we will restrict ourselves to Borel probability distributions over $\R^d$, and we will denote the set of such measures with finite $p$th moments as $\P_p(\R^d)$. We will let $\N_\sigma$ denote the standard normal distribution with mean 0 and standard deviation $\sigma$, with corresponding probability density function $\varphi_\sigma$. We define the smoothed Wasserstein distance $W_p^\sigma$ by
+\begin{align*}
+    W_p^\sigma(\nu,\mu) := W_p(\nu * \N_\sigma, \mu * \N_\sigma) = \inf (\E[d(X + Z, Y + Z)^p])^{1/p},
+\end{align*}
+taking an infimum over $X$ and $Y$ with the correct marginals and independent $Z \sim \N_\sigma$.
+
+
+\begin{proposition}
+    $W_p^\sigma$ is a metric on $\P_p(\R^d)$.
+\end{proposition}
+\begin{proof}
+    The fact that $W_p^\sigma(\nu,\mu)$ is symmetric, non-negative, and equals zero for $\nu=\mu$ follows from the definition. Now, fix $\mu_1, \mu_2, \mu_3 \in \P_p(\R^d)$. Let $\pi_{12} \in \Pi(\mu_1 * \N_\sigma, \mu_2 * \N_\sigma)$ be the smoothed optimal coupling of $\mu_1$ and $\mu_2$, and let $\pi_{23} \in \Pi(\mu_2 * \N_\sigma, \mu_3 * \N_\sigma)$ be the optimal coupling of $\mu_2$ and $\mu_3$ (existence is guaranteed because metrics are continuous). Then, we can use the gluing lemma to construct a measure $\pi \in \P_p(\R^d \times \R^d \times \R^d)$ with $\pi_{12}$ and $\pi_{23}$ as marginals in the natural way. Then, defining $\pi_{13} \in \Pi(\mu_1, \mu_3)$ by $\pi_{13}(A \times B) = \pi(A \times \R^d \times B)$, we have
+    \begin{align*}
+        W_p^\sigma(\mu_1, \mu_3) &\leq (\E_{\pi_{13}}\norm{X_1 - X_3}^p)^{1/p} = (\E_{\pi}\norm{X_1 - X_3}^p)^{1/p}\\
+        &\leq (\E_{\pi} \norm{X_1 - X_2}^p)^{1/p} + (\E_{\pi}\norm{X_2 - X_3}^p)^{1/p}\\
+        &= (\E_{\pi_{12}} \norm{X_1 - X_2}^p)^{1/p} + (\E_{\pi_{23}}\norm{X_2 - X_3}^p)^{1/p}\\
+        &= W_p^\sigma(\mu_1, \mu_2) + W_p^\sigma(\mu_2, \mu_3).
+    \end{align*}
+    Finally, suppose that $W_p^\sigma(\mu, \nu) = 0$. Then $\mu * \N_\sigma = \nu * \N_\sigma$ (since $W_p$ is a metric), and so $\phi_\mu \phi_{\N_\sigma} = \phi_\nu * \phi_{\N_\sigma}$. Since $\phi_{\N_\sigma} \neq 0$ everywhere, we get $\phi_\nu = \phi_\mu$ pointwise, so $\nu = \mu$.
+\end{proof}
+
+In fact, this proof generalizes to any noise model $\mathcal{M}_\sigma$ for which $\phi_{\mathcal{M}_\sigma}$ is zero. A sufficient condition for this is \href{https://en.wikipedia.org/wiki/Infinite_divisibility_(probability)}{infinite divisibility}, i.e. that the noise can be expressed as a sum of an arbitrary number of i.i.d variables. This includes \href{https://en.wikipedia.org/wiki/Stable_distribution}{stable distributions} but excludes distributions with bounded support.
+
+See \url{http://people.ece.cornell.edu/zivg/GOT_AISTATS2020.pdf} for more details.
+
+\subsubsection{Smoothed \texorpdfstring{$W_1$}{W1} metric}
+We have
+\begin{align*}
+    W_1^\sigma(\mu,\nu) &= W_1(\mu * \N_\sigma, \nu * \N_\sigma)\\
+    &= \sup_{f \in \Lip_1(\R^d)} \E_{\mu * \N_\sigma} f - \E_{\nu * \N_\sigma}f\\
+    &= \sup_{f \in \Lip_1(\R^d)} \E_{\mu} f * \varphi_\sigma - \E_{\nu} f * \varphi_\sigma\\
+    &\approx \sup_{\substack{\theta \in \Theta\\f_\theta \in \Lip_1(\R^d)}} \E_\mu f_\theta * \varphi_\sigma - \E_\nu f_\theta * \varphi_\sigma,
+\end{align*}
+for some parameterization of Lipschitz-1 functions $\{f_\theta\}_{\theta \in \Theta}$. (note: does equality 2 need any conditions on measures, or can I take a limit?) We have a closed form for neural networks with a single hidden layer using \href{https://arxiv.org/pdf/1811.05381.pdf}{group sort activation}
+
+Another perspective is that
+\begin{equation*}
+    W_1^\sigma(P,Q) = \sup_{g \in \mathcal{F}_\sigma} \E_\mu g - \E_\nu g,
+\end{equation*}
+where $\mathcal{F}_\sigma = \{ f * \varphi_\sigma \mid f \in \Lip_1(\R^d)\}$. This supremum domain is more well-behaved in some sense (H\:older ball?) than $\Lip_1(\R^d)$. 
+
+\subsubsection{Emperical approximation with smoothed \texorpdfstring{$W_1$}{W1} metric}
+
+In the non-smooth case, we have
+\begin{equation*}
+    \E[W_1(\hat{P}_n, P)] \lesssim \begin{cases}
+        n^{-1/2}, &d=1\\
+        \frac{\log n}{\sqrt{n}}, &d=2\\
+        n^{-1/d}, &d \geq 3.
+    \end{cases}
+\end{equation*}
+These are asymptotically tight, except for the second, which has some wiggle room (how much?). Thus, for $d=1$, we have
+\begin{equation*}
+    \sqrt{n} \E W_1(\hat{P}_n,P) \to \text{const}.
+\end{equation*}
+A natural question is to find the limiting distribution of $\sqrt{n} W_1(\hat{P}_n, P)$
+
+\subsection{Bary}
+
+\subsection{Background proofs}
+\begin{proposition}
+    The characteristic function of the normal distribution $\N(\mu,\sigma)$ is given by
+    \begin{equation*}
+        \phi(t) = e^{it\mu - \frac{1}{2}\sigma^2t^2}.
+    \end{equation*}
+\end{proposition}
+\begin{proof}
+    For the standard normal $\N(0,1)$, we have
+    \begin{align*}
+        \phi_0(t) = \E_{X \sim \N(0,1)}[e^{itX}] &= \frac{1}{\sqrt{2\pi}} \int_{-\infty}^\infty e^{itx} e^{-\frac{1}{2}x^2} \dd x\\
+        &= \frac{1}{\sqrt{2\pi}} \left[ \int_{0}^\infty e^{itx} e^{-\frac{1}{2}x^2} \dd x - \int_{0}^\infty e^{-itx} e^{-\frac{1}{2}x^2} \dd x \right]\\
+        &= \sqrt{\frac{2}{\pi}} \int_{0}^\infty \cos(tx) e^{-\frac{1}{2}x^2} \dd x.
+    \end{align*}
+    Hence, we can use integration by parts to obtain
+    \begin{align*}
+        \phi_0'(t) &= -\sqrt{\frac{2}{\pi}} \int_0^\infty \sin(tx)xe^{-\frac{1}{2}x^2} \dd x\\
+        &= \sqrt{\frac{2}{\pi}} \int_0^\infty \sin(tx) \dd \,[e^{-\frac{1}{2}x^2}]\\
+        &= \sqrt{\frac{2}{\pi}} \left[\left.\sin(tx)e^{-\frac{1}{2}x^2}\right|_0^{\infty} - x \int_0^\infty \cos(tx) e^{-\frac{1}{2}x^2} \dd x\right]\\
+        &= -x \phi'(t)
+    \end{align*}
+    With initial condition $\phi_0(0) = 1$, this gives that $\phi_0(t) = e^{-\frac{1}{2}x^2}$. Thus,
+    \begin{equation*}
+        \phi(t) = \E_{X \sim \N(\mu,\sigma)}[e^{itX}] = \E_{X \sim \N(0,1)}[e^{it(\sigma X + \mu)}] = e^{it\mu} \phi_0(\sigma t) = e^{it\mu - \frac{1}{2}\sigma^2t^2}.
+    \end{equation*}
+\end{proof}
+
+\end{document}
