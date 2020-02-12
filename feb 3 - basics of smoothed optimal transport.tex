@@ -19,6 +19,9 @@
 \newcommand{\N}{\mathcal{N}}
 \renewcommand{\P}{\mathcal{P}}
 
+\DeclareMathOperator{\supp}{supp}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Var}{Var}
 \DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
 \DeclarePairedDelimiter{\norm}{\lVert}{\rVert}
 
@@ -91,16 +94,18 @@ where the infimum is taken over all $X$ and $Y$ whose joint distribution is a co
 \begin{proposition}
 $(\P_p, W_p)$ is a metric space.
 \end{proposition}
+
+\begin{proposition}
+Convergence with respect to $W_p$ is equivalent to weak convergence, plus convergence of $p$th moment.
+\end{proposition}
 See \url{https://en.wikipedia.org/wiki/Wasserstein_metric} and \url{http://n.ethz.ch/~gbasso/download/A%20Hitchhikers%20guide%20to%20Wasserstein/A%20Hitchhikers%20guide%20to%20Wasserstein.pdf} for more details.
 
 \subsection{Gaussian-smoothed Wasserstein metric}
 
 In what follows, we will restrict ourselves to Borel probability distributions over $\R^d$, and we will denote the set of such measures with finite $p$th moments as $\P_p(\R^d)$. We will let $\N_\sigma$ denote the standard normal distribution with mean 0 and standard deviation $\sigma$, with corresponding probability density function $\varphi_\sigma$. We define the smoothed Wasserstein distance $W_p^\sigma$ by
 \begin{align*}
-    W_p^\sigma(\nu,\mu) := W_p(\nu * \N_\sigma, \mu * \N_\sigma) = \inf (\E[d(X + Z, Y + Z)^p])^{1/p},
+    W_p^\sigma(\nu,\mu) := W_p(\nu * \N_\sigma, \mu * \N_\sigma).
 \end{align*}
-taking an infimum over $X$ and $Y$ with the correct marginals and independent $Z \sim \N_\sigma$.
-
 
 \begin{proposition}
     $W_p^\sigma$ is a metric on $\P_p(\R^d)$.
@@ -134,7 +139,7 @@ Another perspective is that
 \begin{equation*}
     W_1^\sigma(P,Q) = \sup_{g \in \mathcal{F}_\sigma} \E_\mu g - \E_\nu g,
 \end{equation*}
-where $\mathcal{F}_\sigma = \{ f * \varphi_\sigma \mid f \in \Lip_1(\R^d)\}$. This supremum domain is more well-behaved in some sense (H\:older ball?) than $\Lip_1(\R^d)$. 
+where $\mathcal{F}_\sigma = \{ f * \varphi_\sigma \mid f \in \Lip_1(\R^d)\}$. This supremum domain is more well-behaved in some sense (H\"older ball?) than $\Lip_1(\R^d)$. 
 
 \subsubsection{Emperical approximation with smoothed \texorpdfstring{$W_1$}{W1} metric}
 
@@ -150,11 +155,87 @@ These are asymptotically tight, except for the second, which has some wiggle roo
 \begin{equation*}
     \sqrt{n} \E W_1(\hat{P}_n,P) \to \text{const}.
 \end{equation*}
-A natural question is to find the limiting distribution of $\sqrt{n} W_1(\hat{P}_n, P)$
+A natural question is to find the limiting distribution of $\sqrt{n} W_1(\hat{P}_n, P)$ (for each $n$, this is a random variable using $n$ samples for the emperical estimate). I believe we have a description of this case (find this, also why couldn't we then get the expectation). For $d \geq 3$, I think this is unknown (verify). The reason that the one-dimensional case is more straightforward is that
+\begin{equation*}
+    W_1(P,Q) = \norm{F - G}_{L^1(\R)},
+\end{equation*}
+where $F$ and $G$ are the corresponding CDFs. This follows (in one direction) because
+\begin{equation*}
+    \norm{F - G}_{L^1(\R)} = \norm{F^{-1} - G^{-1}}_{L^1([0,1])}.
+\end{equation*}
+(This describes a greedy algorithm, sort of ``pouring'' one distribution into the other.)
 
-\subsection{Bary}
+In the smooth case, however, we have
+\begin{equation*}
+    \E[W_1^\sigma(\hat{P}_n,P)] \approx n^{-1/2}
+\end{equation*}
+for all $d \geq 1$. More generally, we have
+\begin{equation*}
+    \sqrt{n} W_1^\sigma(P_n,P) \xrightarrow{d} \sup_{f \in \Lip_1(\R^d)} G_P(f)
+\end{equation*}
+where $\{G_P(f)\}_{f \in \Lip}$ is a tight Gaussian process over $\ell^\infty(\Lip_2(\R^d))$ with $\E G_P(f) = 0$
+and
+\begin{equation*}
+    \Cov(G_P(f), G_P(g)) = \int (f * \varphi_\sigma) (g * \varphi_\sigma) dP.
+\end{equation*}
+[todo: understand this]
 
-\subsection{Background proofs}
+\subsection{Smooth Wasserstein Barycenter}
+As we have seen
+\begin{equation*}
+    W_2^\sigma(P,Q) = W_2(P*\N_\sigma,Q*\N_\sigma)
+\end{equation*}
+defines a metric which metrizes weak convergence.
+
+[Check whether this is true or conjecture:]
+\begin{equation*}
+    \E[W_2^\sigma(\hat{P}_n,P)^2] \approx \frac{1}{n}
+\end{equation*}
+for $P$ sub-Gaussian with constant $K \leq f(\sigma)$
+
+The barycenter problem is defined as follows. Given a set of probability distributions $P_1, \dots, P_k \in \P_2(\R^d)$, find $Q$ minimizing
+\begin{equation*}
+    \sum_{i=1}^k W_2^2(P_i,Q).
+\end{equation*}
+Perhaps smoothed $W_2$ distance would have an advantage (from a statistical perspective) if we are given samples from the distributions. Then, we can look at the sequence of barycenters from the emperical distributions and see how quickly they converge to the true barycenter. Hopefully, this will have a statistical edge over the entropic optimal transport framework, which has strong convexity in its favor.
+
+\subsection{\texorpdfstring{$f$}{f}-Divergences}
+Let $P$ and $Q$ be two probability distributions over $\Omega$ such that $P$ is absolutely continuous with respect to $Q$. Then, for a convex function $f$ such that $f(1) = 0$, the $f$-divergence of $P$ from $Q$ is defined as
+\begin{equation*}
+    D_f(P \parallel Q) := \int_\Omega f\left(\frac{\dd P}{\dd Q}\right) \dd Q.
+\end{equation*}
+If $P$ and $Q$ are both absolutely continuous with respect to a reference distribution $\mu$ on $\Omega$ with probability density functions $p$ and $q$, then
+\begin{equation*}
+    D_f(P \parallel Q) = \int_\Omega f\left(\frac{p(x)}{q(x)}\right)q(x) \dd \mu(x).
+\end{equation*}
+In general, by Jensen's inequality,
+\begin{equation*}
+    D_f(P \parallel Q) = \int_\Omega f\left(\frac{\dd P}{\dd Q}\right) \dd Q \geq f\left(\int_\Omega \frac{\dd P}{\dd Q} \dd Q \right) = f(1) = 0,
+\end{equation*}
+with equality if and only if $P = Q$.
+
+A standard $f$-divergence is the KL-divergence, given by $f = t\log t$.
+\begin{equation*}
+    D_{KL}(P \parallel Q) = \int_\Omega \frac{\dd P}{\dd Q}\log\left(\frac{\dd P}{\dd Q}\right) \dd Q = \int_\Omega \log\left(\frac{\dd P}{\dd Q}\right) \dd P
+\end{equation*}
+Also common is total variation distance, given by $f = \abs{t-1}/2$.
+\begin{equation*}
+    D_{TV}(P \parallel Q) = \frac{1}{2}\int_\Omega d \abs{P - Q} = \frac{1}{2}\norm{f - g}_1,
+\end{equation*}
+where the last case holds if $P$ and $Q$ are both dominated by the measure with respect to which the norm is taken and have corresponding pdfs are $f$ and $g$.
+
+Some downsides:
+\begin{align*}
+    D_{KL}(\mu \parallel \nu) &= \infty \quad \text{if } \nu \not\ll \nu\\
+    D_{TV}(\mu \parallel \nu) &= \text{const} \quad \text{if } \supp(\mu) \cap \supp(\nu) = \emptyset
+\end{align*}
+TV distance doesn't metrize weak convergence.
+
+
+See \url{https://en.wikipedia.org/wiki/F-divergence} for more details.
+
+
+\subsection{Background proofs and definitions}
 \begin{proposition}
     The characteristic function of the normal distribution $\N(\mu,\sigma)$ is given by
     \begin{equation*}
@@ -180,5 +261,14 @@ A natural question is to find the limiting distribution of $\sqrt{n} W_1(\hat{P}
         \phi(t) = \E_{X \sim \N(\mu,\sigma)}[e^{itX}] = \E_{X \sim \N(0,1)}[e^{it(\sigma X + \mu)}] = e^{it\mu} \phi_0(\sigma t) = e^{it\mu - \frac{1}{2}\sigma^2t^2}.
     \end{equation*}
 \end{proof}
+
+\begin{definition}[Sub-Gaussian distribution]
+    We call $P \in \P(\R^d)$ $\beta$-sub-Gaussian, for $\beta > 0$, if $X \sim P$ satisfies
+    \begin{equation*}
+        \E[\exp(\alpha \cdot (X - \E[X]))] \leq e^{\beta^2 \norm{\alpha}^2/2}
+    \end{equation*}
+    for all $\alpha \in \R^d$.
+\end{definition}
+
 
 \end{document}
